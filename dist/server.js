@@ -19,11 +19,6 @@ app.use((0, cors_1.default)({
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 // Routes
-app.use('/', (req, res) => {
-    res.json({
-        message: "Server Up and Running"
-    });
-});
 app.use('/api', gadgetRoutes_1.default);
 app.use('/api/auth', authRoute_1.default);
 app.listen(PORT, () => {

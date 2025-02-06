@@ -40,11 +40,9 @@ const express_1 = __importDefault(require("express"));
 const gadgetController = __importStar(require("../controllers/gadgetController"));
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
-// Add middleware to all gadget routes
-router.use(auth_1.authenticate);
-router.get('/gadgets', gadgetController.getGadgets);
-router.post('/gadgets', gadgetController.createGadget);
-router.patch('/gadgets/:id', gadgetController.updateGadget);
-router.delete('/gadgets/:id', gadgetController.deleteGadget);
-router.post('/gadgets/:id/self-destruct', gadgetController.selfDestruct);
+router.get('/gadgets', auth_1.authenticate, gadgetController.getGadgets);
+router.post('/gadgets', auth_1.authenticate, gadgetController.createGadget);
+router.patch('/gadgets/:id', auth_1.authenticate, gadgetController.updateGadget);
+router.delete('/gadgets/:id', auth_1.authenticate, gadgetController.deleteGadget);
+router.post('/gadgets/:id/self-destruct', auth_1.authenticate, gadgetController.selfDestruct);
 exports.default = router;

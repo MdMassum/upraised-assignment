@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -41,40 +8,86 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logout = exports.login = exports.signup = void 0;
-const authService = __importStar(require("../services/authService"));
+const prisma_1 = __importDefault(require("../prisma"));
+const auth_1 = require("../utils/auth");
 // user signup
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
-    const user = yield authService.signup(email, password);
-    res.status(201).json({ user });
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            res.status(400).json('Email or Password cannot be empty');
+            return;
+        }
+        const existingUser = yield prisma_1.default.user.findUnique({ where: { email } });
+        if (existingUser) {
+            res.status(400).json("User already exists");
+            return;
+        }
+        const hashedPassword = yield (0, auth_1.hashPassword)(password);
+        const user = yield prisma_1.default.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+            },
+        });
+        res.status(201).json({ user });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 exports.signup = signup;
 // user login
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
-    const { user, token } = yield authService.login(email, password);
-    // Set token in a cookie
-    res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 3600000, // 1 hour expiration
-    });
-    res.json({ user, token });
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            res.status(400).json('Email or Password cannot be empty');
+            return;
+        }
+        const user = yield prisma_1.default.user.findUnique({ where: { email } });
+        if (!user) {
+            res.status(404).json("User not found");
+            return;
+        }
+        const isValidPassword = yield (0, auth_1.comparePassword)(password, user.password);
+        if (!isValidPassword) {
+            res.status(401).json("Invalid Credentials");
+            return;
+        }
+        const token = (0, auth_1.generateToken)(user.id);
+        // Set token in a cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 3600000, // 1 hour expiration
+        });
+        res.status(200).json({ user, token });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 exports.login = login;
 // user logout
 const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId;
-    const result = yield authService.logout(userId);
-    // Clear the token cookie
-    res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-    });
-    res.json(result);
+    try {
+        // Clear the token cookie
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        });
+        res.status(200).json("Logout Successfully");
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 exports.logout = logout;

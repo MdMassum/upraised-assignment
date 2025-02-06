@@ -6,7 +6,7 @@ const authenticate = (req, res, next) => {
     var _a;
     const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token; // Ensure cookies exist
     if (!token) {
-        res.status(401).json({ message: "Access denied" });
+        res.status(401).json({ message: "Access denied, Please Login First !!" });
         return;
     }
     try {
