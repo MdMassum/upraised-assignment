@@ -5,9 +5,15 @@ import * as gadgetService from '../services/gadgetService';
 // get gadgets -->
 export const getGadgets = async (req: Request, res: Response) => {
 
-  const status = req.query.status as string
+  const status:any = req.query.status as string
+
+  if(status !== "Available" && status !== "Deployed" && status !== "Destroyed" && status !== "Decommissioned" && status != undefined){
+    res.status(402).json("Status can only be Available, Deployed, Destroyed or Decommissioned")
+    return;
+  }
+
   const gadgets = await gadgetService.getGadgets(status);
-  res.json(gadgets);
+  res.status(200).json(gadgets);
 
 };
 
@@ -24,6 +30,14 @@ export const createGadget = async (req: Request, res: Response) => {
 export const updateGadget = async (req: Request, res: Response) => {
 
   const id = req.params.id;
+  const {status} = req.body;
+
+   if(status !== "Available" && status !== "Deployed" && status !== "Destroyed" && status !== "Decommissioned" && status != undefined){
+    
+    res.status(402).json("Status can only be Available, Deployed, Destroyed or Decommissioned")
+    return;
+  }
+
   const gadget = await gadgetService.updateGadget(id, req.body);
   res.json(gadget);
 

@@ -1,10 +1,11 @@
 import prisma from '../prisma';
 
+export type Status = "Available" | "Deployed" | "Destroyed" | "Decommissioned";
 interface Gadget{
   
     id:String,
     name:String,
-    status:  "Available" | "Deployed" | "Destroyed" | "Decommissioned",
+    status:  Status
     decommissionedAt?:any
 }
 
@@ -21,7 +22,7 @@ const generateCodename = () => {
 };
 
 // get gadgets service
-export const getGadgets = async (status?: string) => {
+export const getGadgets = async (status?: Status) => {
 
   const gadgets = await prisma.gadget.findMany({
     where: status ? { status } : undefined,
@@ -45,7 +46,7 @@ export const createGadget = async () => {
 };
 
 // update gadget service
-export const updateGadget = async (id: string, data: Partial<Gadget>) => {
+export const updateGadget = async (id: string, data: any) => {
 
   return prisma.gadget.update({
     where: { id },

@@ -4,13 +4,10 @@ import { authenticate } from '../middleware/auth';
 
 const router = express.Router();
 
-// Add middleware to all gadget routes
-router.use(authenticate);
-
-router.get('/gadgets', gadgetController.getGadgets);
-router.post('/gadgets', gadgetController.createGadget);
-router.patch('/gadgets/:id', gadgetController.updateGadget);
-router.delete('/gadgets/:id', gadgetController.deleteGadget);
-router.post('/gadgets/:id/self-destruct', gadgetController.selfDestruct);
+router.get('/gadgets', authenticate, gadgetController.getGadgets);
+router.post('/gadgets', authenticate, gadgetController.createGadget);
+router.patch('/gadgets/:id', authenticate, gadgetController.updateGadget);
+router.delete('/gadgets/:id', authenticate, gadgetController.deleteGadget);
+router.post('/gadgets/:id/self-destruct', authenticate, gadgetController.selfDestruct);
 
 export default router;

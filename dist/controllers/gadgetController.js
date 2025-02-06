@@ -47,8 +47,12 @@ const gadgetService = __importStar(require("../services/gadgetService"));
 // get gadgets -->
 const getGadgets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const status = req.query.status;
+    if (status !== "Available" && status !== "Deployed" && status !== "Destroyed" && status !== "Decommissioned") {
+        res.status(402).json("Status can only be Available, Deployed, Destroyed or Decommissioned");
+        return;
+    }
     const gadgets = yield gadgetService.getGadgets(status);
-    res.json(gadgets);
+    res.status(200).json(gadgets);
 });
 exports.getGadgets = getGadgets;
 // create gadget -->

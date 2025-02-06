@@ -1,4 +1,5 @@
 import express from 'express';
+import { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
+
 app.use('/api', gadgetRoutes);
 app.use('/api/auth', authRoutes);
 
